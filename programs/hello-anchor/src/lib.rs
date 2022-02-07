@@ -5,10 +5,20 @@ declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 #[program]
 pub mod hello_anchor {
     use super::*;
-    pub fn initialize(ctx: Context<Initialize>) -> ProgramResult {
+    pub fn set_data(ctx: Context<SetData>, data: u64) -> ProgramResult {
+        ctx.accounts.my_account.data = data;
         Ok(())
     }
 }
 
+#[account]
+#[derive(Default)]
+pub struct MyAccount {
+    data: u64
+}
+
 #[derive(Accounts)]
-pub struct Initialize {}
+pub struct SetData<'info> {
+    #[account(mut)]
+    pub my_account: Account<'info, MyAccount>
+}
