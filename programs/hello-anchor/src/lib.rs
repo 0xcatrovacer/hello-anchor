@@ -3,10 +3,12 @@ use anchor_lang::prelude::*;
 declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
 
 #[program]
-pub mod hello_anchor {
+mod hello_anchor {
     use super::*;
     pub fn set_data(ctx: Context<SetData>, data: u64) -> ProgramResult {
-        ctx.accounts.my_account.data = data;
+        if ctx.accounts.token_account.amount > 0 {
+            ctx.accounts.my_account.data = data;
+        }
         Ok(())
     }
 }
@@ -14,11 +16,18 @@ pub mod hello_anchor {
 #[account]
 #[derive(Default)]
 pub struct MyAccount {
-    data: u64
+    data: u64,
+    mint: Pubkey
 }
 
 #[derive(Accounts)]
 pub struct SetData<'info> {
     #[account(mut)]
-    pub my_account: Account<'info, MyAccount>
+    pub my_account: Account<'info, MyAccount>,
+    #[account(
+        constraint = my_account.mint == token_account.mint,
+        has_one = owner
+    )]
+    pub token_account: Account<'info, TokenAccount>,
+    pub owner: Signer<'info>
 }
